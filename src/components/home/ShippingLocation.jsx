@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { bookingService } from '../../services/bookingService';
+import { useNavigate } from 'react-router-dom'; 
 import locationBg from '../../assets/location.png'; 
 
 const ShippingLocation = () => {
   const [trips, setTrips] = useState([]);
   const [activeLocation, setActiveLocation] = useState({ name: 'VAL DI VERSA', country: 'ITALY' });
   const [loading, setLoading] = useState(true);
+  
+  const navigate = useNavigate(); // 👈 2. Navigation Function Initialize Kiya
 
   const defaultImages = [
     "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=400&q=80",
@@ -29,7 +32,6 @@ const ShippingLocation = () => {
         if (response && response.trips && response.trips.length > 0) {
           let mergedTrips = [...response.trips];
           
-          // Agar database me entries 2 hain toh automatic 3 entries poori karega
           if (mergedTrips.length < 3) {
             const needed = 3 - mergedTrips.length;
             for (let i = 0; i < needed; i++) {
@@ -69,39 +71,33 @@ const ShippingLocation = () => {
   return (
     <div id="locations-section" className="relative w-full h-auto text-white overflow-hidden flex items-center select-none bg-[#021424]">
       
-      {/* 🏞️ NATURAL BACKGROUND LAYER: Image ratio ke hisab se resize hogi, upar-neeche se cut nahi hogi */}
+      {/* 🏞️ NATURAL BACKGROUND LAYER */}
       <div className="absolute inset-0 z-0 w-full h-full">
         <img 
           src={locationBg} 
           alt="Yacht Background" 
           className="w-full h-full object-fill opacity-100" 
         />
-        {/* Soft shadow tint layout balance ke liye */}
         <div className="absolute inset-y-0 right-0 w-full lg:w-[55%] bg-gradient-to-r from-transparent via-[#021424]/30 to-[#021424]/75"></div>
       </div>
       
       {/* 🎴 CONTENT WRAPPER GRID */}
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10 px-6 md:px-16 lg:px-20 py-16 lg:py-24">
         
-        {/* 🚢 LEFT SIDE: TOP RATING & ITALY DYNAMIC TYPOGRAPHY */}
-     <div className="lg:col-span-5 flex flex-col items-start text-left self-start lg:-mt-8">
-  {/* Top Rating Label - Size Bada Kar Diya */}
-  <span className="text-white text-sm md:text-lg font-sans font-extrabold tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-    TOP RATING
-  </span>
-  
-  {/* Stars Grid */}
-  <div className="flex items-center gap-1 text-amber-400 text-lg md:text-xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] pt-1 pb-2">
-    <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-  </div>
-  
-  {/* Main Country Render Title */}
-  <h3 className="text-6xl md:text-[5.5rem] font-sans font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-cyan-100 via-cyan-300 to-cyan-400 uppercase leading-none filter drop-shadow-[0_0_25px_rgba(34,211,238,0.55)] m-0">
-    {activeLocation.country}
-  </h3>
-</div>
+        {/* 🚢 LEFT SIDE */}
+        <div className="lg:col-span-5 flex flex-col items-start text-left self-start lg:-mt-8">
+          <span className="text-white text-sm md:text-lg font-sans font-extrabold tracking-[0.2em] uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            TOP RATING
+          </span>
+          <div className="flex items-center gap-1 text-amber-400 text-lg md:text-xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] pt-1 pb-2">
+            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+          </div>
+          <h3 className="text-6xl md:text-[5.5rem] font-sans font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-cyan-100 via-cyan-300 to-cyan-400 uppercase leading-none filter drop-shadow-[0_0_25px_rgba(34,211,238,0.55)] m-0">
+            {activeLocation.country}
+          </h3>
+        </div>
 
-        {/* 🪟 RIGHT SIDE: TRANSLUCENT GLASSMORPHIC BLOCK (Guaranteed 3 Items Displayed) */}
+        {/* 🪟 RIGHT SIDE: TRANSLUCENT GLASSMORPHIC BLOCK */}
         <div className="lg:col-span-7 bg-[#041c30]/60 border border-white/10 p-5 md:p-8 rounded-xl shadow-2xl space-y-6 max-w-xl w-full justify-self-center lg:justify-self-end">
           
           {trips.map((loc, index) => {
@@ -113,7 +109,7 @@ const ShippingLocation = () => {
                 onMouseEnter={() => setActiveLocation({ name: loc.location_name, country: loc.country })}
                 className="flex flex-col sm:flex-row gap-5 items-center sm:items-start transition-all duration-300 group cursor-pointer"
               >
-                {/* Destination Rounded Thumbnail Card */}
+                {/* Destination Thumbnail */}
                 <img 
                   src={loc.image_url || defaultImages[index % defaultImages.length]} 
                   alt={loc.location_name} 
@@ -122,13 +118,10 @@ const ShippingLocation = () => {
 
                 {/* Info Metadata Block */}
                 <div className="flex-1 text-left space-y-1 w-full">
-                  
-                  {/* Location Title */}
                   <h4 className="text-lg font-sans font-extrabold text-white tracking-wide uppercase group-hover:text-cyan-300 transition-colors">
                     {loc.location_name}
                   </h4>
                   
-                  {/* Mini Meta Info */}
                   <div className="text-[10px] font-sans font-bold tracking-wider text-slate-300 uppercase flex flex-wrap gap-2 items-center opacity-90">
                     <span>April 6</span>
                     <span className="text-slate-500">|</span>
@@ -137,7 +130,6 @@ const ShippingLocation = () => {
                     <span className="text-cyan-400">{loc.available_slots} People Left</span>
                   </div>
 
-                  {/* Description Element */}
                   <p className="text-slate-300/90 text-[10px] sm:text-[10.5px] font-sans font-normal leading-relaxed tracking-wide line-clamp-3 uppercase">
                     {loc.description}
                   </p>
@@ -145,7 +137,11 @@ const ShippingLocation = () => {
                   {/* Action UI Trigger */}
                   <div className="pt-2">
                     {isSelected ? (
-                      <button className="bg-gradient-to-r from-cyan-400 to-teal-400 text-[#021526] font-sans font-bold text-[9px] tracking-widest px-5 py-2.5 rounded shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all duration-300 cursor-pointer uppercase">
+                      
+                      <button 
+                        onClick={() => navigate('/login')} 
+                        className="bg-gradient-to-r from-cyan-400 to-teal-400 text-[#021526] font-sans font-bold text-[9px] tracking-widest px-5 py-2.5 rounded shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all duration-300 cursor-pointer uppercase hover:scale-105 active:scale-95"
+                      >
                         BOOK TOUR
                       </button>
                     ) : (

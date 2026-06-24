@@ -1,41 +1,54 @@
-import axios from "axios";
+import axios from 'axios';
 
-// 1. Axios Base Instance Setup
+// Base URL set karein (apne backend portal ke mutabiq)
 const api = axios.create({
-  // Vite projects mein environment variable access karne ke liye import.meta.env use hota hai
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://maritime-shipping-traning-academy.onrender.com/api/v1",
+  baseURL: 'http://localhost:8000/api', // 👈 Apne backend ka URL lagayein
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
-// 2. Global Request Interceptor (Auto-Inject JWT Bearer Token)
+// 🔒 Request Interceptor: Har request se pehle token add karega
 api.interceptors.request.use(
   (config) => {
-    // Local storage se active access token read karna
-    const token = localStorage.getItem("token");
-    
+    const token = localStorage.getItem('access_token');
     if (token) {
-      // Backend validation formatting ke mutabiq header apply karna: Authorization: Bearer <token>
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`; // 👈 Har request ke sath JWT jayega
     }
     return config;
   },
   (error) => {
-    // Agar request request queue mein hi fail ho jaye
     return Promise.reject(error);
   }
 );
 
-// 3. Global Response Interceptor (Error Handling Control)
+// 🔄 Response Interceptor: Agar token expire ho jaye toh handle karega
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // Agar token expire ho jaye ya unauthorized response (401) aaye
-    if (error.response && error.response.status === 401) {
-      console.warn("Unauthorized access or token expired. Redirecting or clearing storage...");
-      // Optional: Aap token clear karwa sakti hain agar user session invalid ho chuka ho
-      // localStorage.removeItem("token");
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Agar 401 (Unauthorized) error aaye aur pehle retry na kiya ho
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        const refreshToken = localStorage.getItem('refresh_token');
+        // Backend par naya token mangne ki request
+        const res = await axios.post('http://localhost:8000/api/auth/refresh', {
+          refresh_token: refreshToken,
+        });
+
+        if (res.status === 200) {
+          localStorage.setItem('access_token', res.data.access_token);
+          api.defaults.headers.common['Authorization'] = `Bearer ${res.data.access_token}`;
+          return api(originalRequest); // Purani request ko naye token ke sath dobara chalao
+        }
+      } catch (refreshError) {
+        // Agar refresh token bhi expire ho gaya toh user ko logout kardo
+        localStorage.clear();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

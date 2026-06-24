@@ -1,6 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
+import authReducer from './slices/authSlice'; 
 
-//  Prinkle aur Zia isme authSlice wagera add kar lenge
-export const store = configureStore({
-  reducer: {},
+const store = configureStore({
+  reducer: {
+    auth: authReducer, 
+  },
 });
+
+export default store;

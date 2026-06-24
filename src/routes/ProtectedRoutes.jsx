@@ -1,13 +1,20 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
-const ProtectedRoutes = ({ allowedRoles }) => {
-  // Temporary setup (Baad mein isko backend token user-role se map karenge)
-  const userRole = localStorage.getItem('role') || 'user'; 
+const ProtectedRoute = ({ allowedRoles }) => {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const token = localStorage.getItem('access_token');
 
-  const hasAccess = allowedRoles.includes(userRole);
+  if (!isAuthenticated && !token) {
+    return <Navigate to="/login" replace />;
+  }
 
-  return hasAccess ? <Outlet /> : <Navigate to="/unauthorized" replace />;
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
 };
 
-export default ProtectedRoutes;
+export default ProtectedRoute;
