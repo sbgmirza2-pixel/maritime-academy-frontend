@@ -1,4 +1,6 @@
 import React from "react";
+// Image ko yahan use kiya hai
+import heroBg from '../../assets/footer.png'; 
 
 const Footer = () => {
   const navLinks = ["HOME", "TRANING", "TRIP", "LOCATION", "CONTACT US"];
@@ -55,7 +57,7 @@ const Footer = () => {
     >
       <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 64px", position: "relative" }}>
 
-        {/* Yacht Image — absolutely positioned, floating above footer */}
+        {/* Yacht Image — local reference updated here */}
         <div
           style={{
             position: "absolute",
@@ -67,7 +69,7 @@ const Footer = () => {
           }}
         >
           <img
-            src="https://pngimg.com/uploads/yacht/yacht_PNG95.png"
+            src={heroBg}
             alt="Luxury yacht"
             style={{
               width: "100%",
@@ -87,7 +89,7 @@ const Footer = () => {
             position: "relative",
           }}
         >
-          {/* Social Icons — cyan border ring, dark transparent bg, white icon */}
+          {/* Social Icons */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
             {socialIcons.map((icon) => (
               <a
@@ -120,7 +122,7 @@ const Footer = () => {
             ))}
           </div>
 
-          {/* Nav Links — centered */}
+          {/* Nav Links */}
           <nav
             style={{
               display: "flex",
