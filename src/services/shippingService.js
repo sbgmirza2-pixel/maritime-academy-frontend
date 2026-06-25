@@ -1,21 +1,31 @@
 import api from "./api";
 
-export const getShippingServices = async () => {
-  const response = await api.get("/shipping-services");
-  return response.data;
-};
+export const shippingService = {
+  getShippingServices: async () => {
+    const response = await api.get(
+      "/shipping"
+    );
 
-export const getShippingServiceById = async (id) => {
-  const response = await api.get(`/shipping-services/${id}`);
-  return response.data;
-};
+    return response.data;
+  },
 
-export const createShippingBooking = async (data) => {
-  const response = await api.post("/shipping-bookings", data);
-  return response.data;
-};
+  getShippingServiceById: async (
+    serviceId
+  ) => {
+    const response = await api.get(
+      `/shipping/${serviceId}`
+    );
 
-export const getFleetTracking = async () => {
-  const response = await api.get("/fleet-tracking");
-  return response.data;
+    return response.data;
+  },
+
+  createShippingBooking: async (
+    serviceId
+  ) => {
+    const response = await api.post(
+      `/shipping/${serviceId}/book`
+    );
+
+    return response.data;
+  },
 };

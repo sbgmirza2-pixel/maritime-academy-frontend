@@ -1,73 +1,112 @@
-import api from './api';
+import api from "./api";
 
 export const bookingService = {
-  // --- TRIPS ---
-  getTrips: async (params) => {
-    // params: location, featured_only, available_only, skip, limit
-    const response = await api.get('/trips', { params });
+  getTrips: async (params = {}) => {
+    const response = await api.get(
+      "/trips",
+      { params }
+    );
+
     return response.data;
   },
 
   getFeaturedTrips: async () => {
-    const response = await api.get('/trips/featured');
+    const response = await api.get(
+      "/trips/featured"
+    );
+
     return response.data;
   },
 
   getTripLocations: async () => {
-    const response = await api.get('/trips/locations');
+    const response = await api.get(
+      "/trips/locations"
+    );
+
     return response.data;
   },
 
-  getTripDetails: async (id) => {
-    const response = await api.get(`/trips/${id}`);
+  getTripDetails: async (tripId) => {
+    const response = await api.get(
+      `/trips/${tripId}`
+    );
+
     return response.data;
   },
 
-  // --- BOOKINGS ---
+  bookTrip: async (tripId, data) => {
+    const response = await api.post(
+      `/trips/${tripId}/book`,
+      data
+    );
+
+    return response.data;
+  },
+
   getMyBookings: async () => {
-    const response = await api.get('/bookings/my'); // Deployed endpoint path
+    const response = await api.get(
+      "/bookings/my"
+    );
+
     return response.data;
   },
 
-  getBookingDetails: async (id) => {
-    const response = await api.get(`/bookings/${id}`);
+  getBookingDetails: async (
+    bookingId
+  ) => {
+    const response = await api.get(
+      `/bookings/${bookingId}`
+    );
+
     return response.data;
   },
 
-  cancelBooking: async (id) => {
-    const response = await api.delete(`/bookings/${id}/cancel`);
+  cancelBooking: async (
+    bookingId
+  ) => {
+    const response = await api.delete(
+      `/bookings/${bookingId}/cancel`
+    );
+
     return response.data;
   },
 
-  // --- STRIPE PAYMENTS ---
-  createPaymentIntent: async (bookingId) => {
-    const response = await api.post('/payments/create-intent', { booking_id: bookingId });
+  createPaymentIntent: async (
+    paymentData
+  ) => {
+    const response = await api.post(
+      "/payments/create-intent",
+      paymentData
+    );
+
     return response.data;
   },
 
-  verifyPayment: async (paymentIntentId) => {
-    const response = await api.get(`/payments/verify/${paymentIntentId}`);
+  verifyPayment: async (
+    paymentIntentId
+  ) => {
+    const response = await api.get(
+      `/payments/verify/${paymentIntentId}`
+    );
+
     return response.data;
   },
 
-  getPaymentStatus: async (id) => {
-    const response = await api.get(`/payments/${id}/status`);
+  getPaymentStatus: async (
+    paymentId
+  ) => {
+    const response = await api.get(
+      `/payments/${paymentId}/status`
+    );
+
     return response.data;
   },
 
   getPaymentHistory: async () => {
-    const response = await api.get('/payments/history');
+    const response = await api.get(
+      "/payments/history"
+    );
+
     return response.data;
   },
-
-  // --- SHIPPING SERVICES ---
-  getShippingServices: async () => {
-    const response = await api.get('/shipping');
-    return response.data;
-  },
-
-  bookShippingService: async (id) => {
-    const response = await api.post(`/shipping/${id}/book`);
-    return response.data;
-  }
 };
