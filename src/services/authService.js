@@ -12,6 +12,7 @@ export const authService = {
     // Saving tokens safely inside localStorage on successful authentication
     if (response.data.access_token) {
       localStorage.setItem("token", response.data.access_token);
+      localStorage.setItem("access_token", response.data.access_token);
     }
     if (response.data.refresh_token) {
       localStorage.setItem("refresh_token", response.data.refresh_token);
@@ -40,6 +41,7 @@ export const authService = {
   // 6. Logout Clear Local Session
   logout: () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
   },
 };

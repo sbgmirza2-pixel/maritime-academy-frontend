@@ -24,7 +24,7 @@ export const fetchUserProfile = createAsyncThunk(
   'auth/fetchUserProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/auth/profile'); // Apne backend endpoint ke mutabiq check kar lein
+      const response = await api.get('/users/me'); // Apne backend endpoint ke mutabiq check kar lein
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.detail || 'Failed to fetch profile');
