@@ -6,6 +6,10 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  if (location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin')) {
+    return null;
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 20) {

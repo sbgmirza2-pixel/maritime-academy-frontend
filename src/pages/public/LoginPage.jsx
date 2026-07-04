@@ -19,7 +19,7 @@ const LoginPage = () => {
     
     if (loginUser.fulfilled.match(result)) {
       dispatch(fetchUserProfile());
-      navigate('/'); 
+      navigate('/dashboard');
     }
   };
 
