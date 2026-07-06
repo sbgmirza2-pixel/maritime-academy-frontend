@@ -1,4 +1,4 @@
-import api from "./api";
+﻿import api from "./api";
 
 export const bookingService = {
   // --- 🚢 TRIPS MANAGEMENT ---
@@ -28,7 +28,12 @@ export const bookingService = {
     return response.data;
   },
 
-  // --- 📅 USER BOOKINGS REGISTRY ---
+  // --- 📅 BOOKINGS CRUD ---
+  getBookings: async () => {
+    const response = await api.get("/bookings");
+    return response.data;
+  },
+
   getMyBookings: async () => {
     const response = await api.get("/bookings/my");
     return response.data;
@@ -39,25 +44,19 @@ export const bookingService = {
     return response.data;
   },
 
+  updateBookingStatus: async (bookingId, status) => {
+    const response = await api.put(`/bookings/${bookingId}/status`, { status });
+    return response.data;
+  },
+
   cancelBooking: async (bookingId) => {
     const response = await api.delete(`/bookings/${bookingId}/cancel`);
     return response.data;
   },
 
-  // --- 💳 STRIPE PAYMENTS ARCHITECTURE ---
+  // --- 💳 PAYMENTS ---
   createPaymentIntent: async (paymentData) => {
-    // paymentData: { booking_id, amount, currency } etc.
     const response = await api.post("/payments/create-intent", paymentData);
-    return response.data;
-  },
-
-  cancelBooking: async (
-    bookingId
-  ) => {
-    const response = await api.delete(
-      `/bookings/${bookingId}/cancel`
-    );
-
     return response.data;
   },
 
@@ -82,8 +81,8 @@ export const bookingService = {
     return response.data;
   },
 
-  bookShippingService: async (serviceId) => {
-    const response = await api.post(`/shipping/${serviceId}/book`);
+  bookShippingService: async (serviceId, bookingData = {}) => {
+    const response = await api.post(`/shipping/${serviceId}/book`, bookingData);
     return response.data;
   },
 };

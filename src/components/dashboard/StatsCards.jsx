@@ -12,19 +12,22 @@ const StatsCards = ({ stats }) => {
   const data = stats || defaultStats;
 
   return (
-    <div className="grid md:grid-cols-4 gap-4">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {data.map((item, index) => (
         <div
           key={index}
-          className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-cyan-500/5 transition duration-300 hover:-translate-y-1 hover:shadow-cyan-500/20"
+          className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-cyan-500/5 transition duration-300 hover:-translate-y-1 hover:shadow-cyan-500/20 flex min-h-[150px] flex-col justify-between"
         >
-          <div className="flex items-center justify-between gap-4">
-            <h3 className="text-sm uppercase tracking-[0.3em] text-slate-400">{item.title}</h3>
-            <span className={`rounded-2xl p-3 ${item.accent}`}>
-              <FontAwesomeIcon icon={item.icon} />
-            </span>
+          <div>
+            <div className="flex items-center justify-between gap-4">
+              <h3 className="text-sm uppercase tracking-[0.3em] text-slate-400">{item.title}</h3>
+              <span className={`rounded-2xl p-3 ${item.accent}`}>
+                <FontAwesomeIcon icon={item.icon} />
+              </span>
+            </div>
+            <p className="text-3xl font-semibold text-white mt-5">{item.value}</p>
           </div>
-          <p className="text-3xl font-semibold text-white mt-5">{item.value}</p>
+          {item.note && <p className="mt-6 text-xs uppercase tracking-[0.3em] text-slate-500">{item.note}</p>}
         </div>
       ))}
     </div>

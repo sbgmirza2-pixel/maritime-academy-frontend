@@ -16,10 +16,12 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await dispatch(loginUser({ email, password }));
-    
+
     if (loginUser.fulfilled.match(result)) {
-      dispatch(fetchUserProfile());
-      navigate('/dashboard');
+      const profileResult = await dispatch(fetchUserProfile());
+      const role = profileResult.payload?.role || profileResult.payload?.user?.role || result.payload?.user?.role || result.payload?.role;
+      const nextPath = role === 'admin' ? '/admin' : '/dashboard';
+      navigate(nextPath);
     }
   };
 
