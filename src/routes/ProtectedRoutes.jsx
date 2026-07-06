@@ -5,12 +5,14 @@ import { useSelector } from 'react-redux';
 const ProtectedRoute = ({ allowedRoles }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const token = localStorage.getItem('access_token');
+  const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+  const effectiveUser = user || storedUser;
 
   if (!isAuthenticated && !token) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && effectiveUser && !allowedRoles.includes(effectiveUser.role)) {
     return <Navigate to="/" replace />;
   }
 

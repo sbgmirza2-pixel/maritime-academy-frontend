@@ -1,4 +1,4 @@
-import api from "./api";
+﻿import api from "./api";
 
 export const courseService = {
   // --- 📚 COURSES MANAGEMENT ---
@@ -14,10 +14,7 @@ export const courseService = {
   },
 
   getCurriculum: async (courseId) => {
-    const response = await api.get(
-      `/courses/${courseId}/curriculum`
-    );
-
+    const response = await api.get(`/courses/${courseId}/curriculum`);
     return response.data;
   },
 
@@ -42,10 +39,23 @@ export const courseService = {
     return response.data;
   },
 
+  getEnrollmentDetails: async (enrollmentId) => {
+    const response = await api.get(`/enrollments/${enrollmentId}`);
+    return response.data;
+  },
+
   updateProgress: async (enrollmentId, progress) => {
-    const response = await api.put(
-      `/enrollments/${enrollmentId}/progress?progress=${progress}`
-    );
+    const response = await api.put(`/enrollments/${enrollmentId}/progress`, { progress });
+    return response.data;
+  },
+
+  completeEnrollment: async (enrollmentId) => {
+    const response = await api.put(`/enrollments/${enrollmentId}/complete`);
+    return response.data;
+  },
+
+  dropEnrollment: async (enrollmentId) => {
+    const response = await api.delete(`/enrollments/${enrollmentId}/drop`);
     return response.data;
   },
 
@@ -57,6 +67,18 @@ export const courseService = {
 
   getCertificationDetails: async (certId) => {
     const response = await api.get(`/certifications/${certId}`);
+    return response.data;
+  },
+
+  generateCertificate: async (payload) => {
+    const response = await api.post("/certifications/generate", payload);
+    return response.data;
+  },
+
+  downloadCertificate: async (certId) => {
+    const response = await api.get(`/certifications/${certId}/download`, {
+      responseType: "blob",
+    });
     return response.data;
   },
 };
