@@ -14,6 +14,8 @@ import RegisterPage from '../pages/public/RegisterPage';
 import StudentDashboard from '../pages/student/StudentDashboard';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import ShippingServices from '../pages/shipping/ShippingServises';
+import ServicesPage from '../pages/shipping/Services';
+
 
 const PublicLayout = () => (
   <>
@@ -31,6 +33,8 @@ const AppRoutes = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/shipping-services" element={<ShippingServices />} />
+          <Route path="/services" element={<ServicesPage />} />
+
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['student']} />}>

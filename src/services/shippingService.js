@@ -1,8 +1,8 @@
-﻿import api from "./api";
+import api from "./api";
 
 export const shippingService = {
   getShippingServices: async () => {
-    const response = await api.get("/shipping");
+    const response = await api.get("/shipping/");
     return response.data;
   },
 
@@ -12,7 +12,7 @@ export const shippingService = {
   },
 
   createShippingService: async (serviceData) => {
-    const response = await api.post("/shipping", serviceData);
+    const response = await api.post("/shipping/", serviceData);
     return response.data;
   },
 

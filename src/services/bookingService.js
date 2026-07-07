@@ -1,4 +1,4 @@
-﻿import api from "./api";
+import api from "./api";
 
 export const bookingService = {
   // --- 🚢 TRIPS MANAGEMENT ---
@@ -72,7 +72,7 @@ export const bookingService = {
 
   // --- 📦 SHIPPING SERVICES INTEGRATION ---
   getShippingServices: async () => {
-    const response = await api.get("/shipping");
+    const response = await api.get("/shipping/");
     return response.data;
   },
 
