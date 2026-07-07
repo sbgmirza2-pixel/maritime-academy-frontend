@@ -26,7 +26,7 @@ const ManagePayments = ({ payments = [], revenue = 0 }) => {
                   <td className="px-4 py-4 text-slate-100">{payment.id || payment._id || payment.transaction_id || `#${index + 1}`}</td>
                   <td className="px-4 py-4 text-slate-400">${payment.amount || payment.total || payment.price || 0}</td>
                   <td className="px-4 py-4 text-cyan-200">{payment.status || payment.state || 'Completed'}</td>
-                  <td className="px-4 py-4 text-slate-500">{payment.created_at || payment.date || '—'}</td>
+                  <td className="px-4 py-4 text-slate-500">{payment.created_at || payment.date || '-'}</td>
                 </tr>
               ))}
             </tbody>

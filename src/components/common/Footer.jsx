@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import footerbg from '../../assets/footer.png'; 
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [hoveredLink, setHoveredLink] = useState(null);
 
@@ -18,21 +21,39 @@ const Footer = () => {
   const navLinks = ["HOME", "TRANING", "TRIP", "LOCATION", "CONTACT US"];
   const footerLinks = ["PRIVACY POLICY", "TERM AND CONDITION", "FAQS", "ABOUT"];
 
+  const sectionMap = {
+    "TRANING": "training-section",
+    "TRIP": "trips-section",
+    "LOCATION": "locations-section",
+    "CONTACT US": "contact-section"
+  };
+
   const handleFooterLinkClick = (e, link) => {
     e.preventDefault();
 
     if (link === "HOME") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (location.pathname !== "/") {
+        navigate("/");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
       return;
     }
 
-    if (link === "LOCATION") {
-      const target = document.getElementById("locations-section");
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
+    const sectionId = sectionMap[link];
+    if (sectionId) {
+      if (location.pathname !== "/") {
+        navigate("/", { state: { scrollToSection: sectionId } });
+      } else {
+        const target = document.getElementById(sectionId);
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }
     }
   };
+
 
   const socialIcons = [
     {
