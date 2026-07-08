@@ -10,25 +10,28 @@ import Certificates from "./Certificates";
 import CourseProgressCard from "./CourseProgressCard";
 import { dashboardService } from "../../services/dashboardService";
 import { courseService } from "../../services/courseService";
-import { parseProgress, getEnrollmentId } from "../../utils/courseProgressUtils";
-
+import { parseProgress } from "../../utils/courseProgressUtils";
 
 const sectionTitles = {
   dashboard: {
-    title: "Dashboard Overview",
-    subtitle: "See your course count, progress, and certificates at a glance.",
+    title: "HQ Operations",
+    subtitle: "Dashboard Overview",
+    description: "Monitor platform velocity, comprehensive track sync status, and credentials.",
   },
   courses: {
-    title: "Courses",
-    subtitle: "List of enrolled courses with current completion status.",
+    title: "Academic Tracks",
+    subtitle: "Enrolled Courses",
+    description: "Review active cohorts, syllabus pathways, and direct operational logs.",
   },
   progress: {
-    title: "Progress",
-    subtitle: "Exact progress for each active course.",
+    title: "Metrics Engine",
+    subtitle: "Velocity Progress",
+    description: "Detailed aggregate calculations and runtime progress trackers.",
   },
   certificates: {
-    title: "Certificates",
-    subtitle: "Certificates you have earned so far.",
+    title: "Credential Ledger",
+    subtitle: "Secured Certificates",
+    description: "Cryptographic confirmation records, diplomas, and official verification.",
   },
 };
 
@@ -41,10 +44,10 @@ const StudentDashboard = () => {
   const [updatingCourseId, setUpdatingCourseId] = useState(null);
   const navigate = useNavigate();
 
-  const getEnrollmentId = (course) => course.enrollment_id || course.id || course._id || course.enrollmentId;
+  const getEnrollmentIdLocal = (course) => course.enrollment_id || course.id || course._id || course.enrollmentId;
 
   const handleUpdateProgress = async (course, newProgress) => {
-    const enrollmentId = getEnrollmentId(course);
+    const enrollmentId = getEnrollmentIdLocal(course);
     if (!enrollmentId) {
       console.error("Missing enrollment ID for course progress update", course);
       return;
@@ -54,7 +57,7 @@ const StudentDashboard = () => {
     try {
       const updated = await courseService.updateProgress(enrollmentId, newProgress);
       const nextCourses = courses.map((existing) => {
-        const existingId = getEnrollmentId(existing);
+        const existingId = getEnrollmentIdLocal(existing);
         if (existingId !== enrollmentId) return existing;
         return {
           ...existing,
@@ -97,10 +100,10 @@ const StudentDashboard = () => {
     : 0;
 
   const stats = [
-    { title: "Courses", value: courses.length },
-    { title: "Completed", value: courses.filter((course) => parseProgress(course) >= 100).length },
-    { title: "Certificates", value: certificates.length },
-    { title: "Progress", value: `${averageProgress}%` },
+    { title: "Courses", value: courses.length, note: "Total enrolled tracks" },
+    { title: "Completed", value: courses.filter((course) => parseProgress(course) >= 100).length, note: "Completed syllabi" },
+    { title: "Certificates", value: certificates.length, note: "Secured credentials" },
+    { title: "Progress", value: `${averageProgress}%`, note: "Average platform velocity" },
   ];
 
   const section = sectionTitles[activeItem] || sectionTitles.dashboard;
@@ -113,7 +116,7 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-950 font-sans text-slate-200 antialiased selection:bg-cyan-500/30">
       <div className="md:flex">
         <DashboardSidebar
           isOpen={isSidebarOpen}
@@ -123,174 +126,132 @@ const StudentDashboard = () => {
           onLogout={handleLogout}
         />
 
-        <div className="flex-1">
-          <div className="md:hidden border-b border-slate-800 bg-slate-950/95 px-4 py-4">
+        <div className="flex-1 min-w-0">
+          {/* Mobile Top App Bar */}
+          <div className="md:hidden border-b border-slate-900 bg-slate-950/80 backdrop-blur px-5 py-3.5 sticky top-0 z-40">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">Student Dashboard</p>
-                <h1 className="text-xl font-semibold">Welcome Back</h1>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-cyan-400">System Gateway</p>
+                <h1 className="text-base font-semibold tracking-tight text-white">Console</h1>
               </div>
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="inline-flex items-center gap-2 rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-sm font-semibold text-white transition hover:border-cyan-400 hover:text-cyan-200"
+                className="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs font-medium text-slate-300 hover:border-slate-700"
               >
-                <span>Menu</span>
-                <span className="text-lg">☰</span>
+                Menu
               </button>
             </div>
           </div>
 
-          <div className="relative">
-            <div
-              className={`fixed inset-0 z-40 bg-slate-950/80 transition-opacity duration-300 md:hidden ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-              onClick={() => setIsSidebarOpen(false)}
-            />
-
-            <main className="relative z-10 px-4 py-6 sm:px-6 md:px-8">
-              <div className="mb-6 rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-cyan-500/5 transition duration-300 hover:-translate-y-0.5 hover:shadow-cyan-500/20">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-2xl bg-slate-800 p-3 text-cyan-300 shadow-inner shadow-cyan-500/10">
-                      <FontAwesomeIcon icon={activeItem === 'dashboard' ? faGaugeHigh : activeItem === 'courses' ? faBookOpen : activeItem === 'progress' ? faChartLine : faCertificate} />
-                    </span>
-                    <div>
-                      <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">{section.title}</p>
-                      <h2 className="mt-2 text-3xl font-semibold text-white">{section.subtitle}</h2>
-                    </div>
+          {/* Main Context Container */}
+          <main className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+            
+            {/* Top Functional Operational Banner */}
+            <div className="rounded-2xl border border-slate-900 bg-slate-900/30 p-6 shadow-sm">
+              <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+                <div className="flex items-start gap-4">
+                  <span className="hidden sm:flex items-center justify-center rounded-xl bg-cyan-500/10 p-2.5 text-cyan-400 border border-cyan-500/10 shrink-0 mt-0.5">
+                    <FontAwesomeIcon icon={activeItem === 'dashboard' ? faGaugeHigh : activeItem === 'courses' ? faBookOpen : activeItem === 'progress' ? faChartLine : faCertificate} className="text-sm" />
+                  </span>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">{section.title}</p>
+                    <h2 className="mt-1 text-xl font-bold tracking-tight text-white">{section.subtitle}</h2>
+                    <p className="mt-0.5 text-xs text-slate-400">{section.description}</p>
                   </div>
+                </div>
+                <div className="rounded-xl border border-slate-900 bg-slate-950/60 px-4 py-2.5 text-left md:min-w-[200px]">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Live Metric Status</p>
+                  <p className="mt-0.5 text-sm font-semibold text-cyan-300/90 tracking-tight">
+                    {courses.length} Active {courses.length === 1 ? 'Track' : 'Tracks'}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <DashboardHeader user={user} />
+            {/* Profile Overview Card */}
+            <DashboardHeader user={user} />
 
-              {activeItem === 'dashboard' && (
-                <div className="grid gap-6 xl:grid-cols-[1.4fr_0.6fr]">
-                  <div className="space-y-6">
-                    <StatsCards stats={stats} />
-                    <div className="rounded-[2rem] border border-cyan-500/20 bg-slate-900/90 p-6 shadow-xl shadow-cyan-500/5 transition duration-300 hover:-translate-y-0.5 hover:shadow-cyan-500/20">
-                      <h3 className="text-xl font-semibold text-white">At a glance</h3>
-                      <p className="mt-4 text-slate-400">You are currently enrolled in {courses.length} course{courses.length === 1 ? '' : 's'} and have earned {certificates.length} certificate{certificates.length === 1 ? '' : 's'}.</p>
-                    </div>
+            {/* Content Swapping Views based on Selection */}
+            {activeItem === 'dashboard' && (
+              <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr] items-start">
+                <div className="space-y-6 min-w-0">
+                  <StatsCards stats={stats} />
+                  <div className="rounded-2xl border border-slate-900 bg-slate-900/40 p-6 shadow-sm">
+                    <h3 className="text-base font-bold tracking-tight text-white">At a glance</h3>
+                    <p className="mt-2 text-sm text-slate-400 leading-normal">
+                      You are currently deployed inside <span className="text-white font-semibold">{courses.length} training cohorts</span> and have cleared <span className="text-white font-semibold">{certificates.length} verification records</span> seamlessly.
+                    </p>
                   </div>
-                  <Certificates certificates={certificates} />
                 </div>
-              )}
+                <Certificates certificates={certificates} />
+              </div>
+            )}
 
-              {activeItem === 'courses' && (
-                <div className="space-y-6">
-                  <div className="rounded-[2rem] border border-emerald-500/20 bg-slate-900/90 p-6 shadow-xl shadow-emerald-500/5 transition duration-300 hover:-translate-y-0.5 hover:shadow-emerald-500/20">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="rounded-2xl bg-emerald-500/15 p-3 text-emerald-200">
-                          <FontAwesomeIcon icon={faBookOpen} />
-                        </span>
-                        <div>
-                          <h3 className="text-2xl font-semibold text-white">Enrolled Courses</h3>
-                          <p className="text-slate-400 mt-1">View your active courses and progress for each one.</p>
-                        </div>
-                      </div>
-                      <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200">{courses.length} enrolled</span>
-                    </div>
+            {activeItem === 'courses' && (
+              <div className="space-y-6">
+                {courses.length > 0 ? (
+                  <div className="grid gap-6 min-w-0">
+                    {courses.map((course, index) => (
+                      <CourseProgressCard
+                        key={index}
+                        course={course}
+                        onUpdateProgress={handleUpdateProgress}
+                        updatingCourseId={updatingCourseId}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-slate-900 bg-slate-900/40 p-12 text-center text-sm font-medium text-slate-400">
+                    No active training files allocated to this user profile.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeItem === 'progress' && (
+              <div className="space-y-6">
+                <ProgressTracker progress={averageProgress} />
+                
+                <div className="rounded-2xl border border-slate-900 bg-slate-900/30 p-6 shadow-sm">
+                  <div className="mb-4">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Core Subsystem Vectors</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Individual course progression breakdowns.</p>
                   </div>
 
                   {courses.length > 0 ? (
-                    <div className="grid gap-4">
-                      {courses.map((course, index) => (
-                        <CourseProgressCard
-                          key={index}
-                          course={course}
-                          onUpdateProgress={handleUpdateProgress}
-                          updatingCourseId={updatingCourseId}
-                        />
-                      ))}
+                    <div className="grid gap-4 min-w-0">
+                      {courses.map((course, index) => {
+                        const title = course.title || course.name || `Course ${index + 1}`;
+                        const progressValue = parseProgress(course);
+
+                        return (
+                          <div key={index} className="rounded-xl border border-slate-900 bg-slate-950/40 p-5 min-w-0">
+                            <div className="flex items-center justify-between gap-4">
+                              <h4 className="text-sm font-bold text-white truncate">{title}</h4>
+                              <span className="font-mono text-xs font-bold text-slate-400 shrink-0">{progressValue}%</span>
+                            </div>
+                            <div className="mt-3 h-2 rounded-xl bg-slate-950 border border-slate-900 overflow-hidden p-0.5">
+                              <div className="h-full rounded-lg bg-cyan-500 transition-all duration-500 ease-out" style={{ width: `${progressValue}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
-                    <div className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-cyan-500/5">
-                      <p className="text-slate-400">No courses enrolled yet.</p>
+                    <div className="text-center text-xs text-slate-500 py-6 italic">
+                      No computational matrix maps found.
                     </div>
                   )}
                 </div>
-              )}
+              </div>
+            )}
 
-              {activeItem === 'progress' && (
-                <div className="space-y-6">
-                  <ProgressTracker progress={averageProgress} />
-                  <div className="rounded-[2rem] border border-violet-500/20 bg-slate-900/90 p-6 shadow-xl shadow-violet-500/5 transition duration-300 hover:-translate-y-0.5 hover:shadow-violet-500/20">
-                    <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="rounded-2xl bg-violet-500/15 p-3 text-violet-200">
-                          <FontAwesomeIcon icon={faChartLine} />
-                        </span>
-                        <div>
-                          <h3 className="text-2xl font-semibold text-white">Course Progress</h3>
-                          <p className="text-slate-400 mt-1">See how each course is progressing.</p>
-                        </div>
-                      </div>
-                      <span className="rounded-full border border-violet-500/20 bg-violet-500/10 px-4 py-2 text-sm text-violet-200">Average {averageProgress}%</span>
-                    </div>
-
-                    {courses.length > 0 ? (
-                      <div className="space-y-4">
-                        {courses.map((course, index) => {
-                          const title = course.title || course.name || `Course ${index + 1}`;
-                          const progressValue = parseProgress(course);
-
-                          return (
-                            <div key={index} className="rounded-3xl border border-slate-800 bg-slate-950/80 p-5">
-                              <div className="flex items-center justify-between gap-4">
-                                <div>
-                                  <h4 className="text-lg font-semibold text-white">{title}</h4>
-                                </div>
-                                <span className="text-sm text-slate-400">{progressValue}%</span>
-                              </div>
-                              <div className="mt-4 h-2 rounded-full bg-slate-800 overflow-hidden">
-                                <div className="h-full rounded-full bg-cyan-500" style={{ width: `${progressValue}%` }} />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <p className="text-slate-400">No progress data because no courses are enrolled yet.</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {activeItem === 'certificates' && (
-                <div className="space-y-6">
-                  <div className="rounded-[2rem] border border-amber-500/20 bg-slate-900/90 p-6 shadow-xl shadow-amber-500/5 transition duration-300 hover:-translate-y-0.5 hover:shadow-amber-500/20">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="rounded-2xl bg-amber-500/15 p-3 text-amber-200">
-                          <FontAwesomeIcon icon={faCertificate} />
-                        </span>
-                        <div>
-                          <h3 className="text-2xl font-semibold text-white">Certificates</h3>
-                          <p className="text-slate-400 mt-1">History of certificates you have earned.</p>
-                        </div>
-                      </div>
-                      <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-4 py-2 text-sm text-amber-200">{certificates.length} total</span>
-                    </div>
-
-                    {certificates.length > 0 ? (
-                      <div className="mt-6 space-y-4">
-                        {certificates.map((cert, index) => (
-                          <div key={index} className="rounded-3xl border border-slate-800 bg-slate-950/80 p-5">
-                            <h4 className="text-lg font-semibold text-white">{cert.title || cert.name || `Certificate ${index + 1}`}</h4>
-                            <p className="text-slate-400 mt-1">{cert.issuer || cert.issued_by || 'Training Academy'}</p>
-                            {cert.date ? <p className="mt-2 text-sm text-slate-500">Issued on {cert.date}</p> : null}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="mt-6 text-slate-400">No certificates received yet.</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </main>
-          </div>
+            {activeItem === 'certificates' && (
+              <div className="max-w-3xl mx-auto">
+                <Certificates certificates={certificates} />
+              </div>
+            )}
+          </main>
         </div>
       </div>
     </div>

@@ -2,34 +2,57 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBookOpen, faCheckCircle, faCertificate, faGaugeHigh } from '@fortawesome/free-solid-svg-icons';
 
 const StatsCards = ({ stats }) => {
+  const configMap = {
+    "courses": { icon: faBookOpen, style: "bg-sky-500/10 text-sky-400 border-sky-500/10" },
+    "completed": { icon: faCheckCircle, style: "bg-emerald-500/10 text-emerald-400 border-emerald-500/10" },
+    "certificates": { icon: faCertificate, style: "bg-amber-500/10 text-amber-400 border-amber-500/10" },
+    "progress": { icon: faGaugeHigh, style: "bg-violet-500/10 text-violet-400 border-violet-500/10" }
+  };
+
   const defaultStats = [
-    { title: 'Courses', value: 0, icon: faBookOpen, accent: 'bg-sky-500/15 text-sky-300 border border-sky-500/20' },
-    { title: 'Completed', value: 0, icon: faCheckCircle, accent: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/20' },
-    { title: 'Certificates', value: 0, icon: faCertificate, accent: 'bg-amber-500/15 text-amber-300 border border-amber-500/20' },
-    { title: 'Progress', value: '0%', icon: faGaugeHigh, accent: 'bg-violet-500/15 text-violet-300 border border-violet-500/20' },
+    { title: 'Courses', value: 0, note: "Total academy tracks" },
+    { title: 'Completed', value: 0, note: "Fully finalized items" },
+    { title: 'Certificates', value: 0, note: "Earned documentation" },
+    { title: 'Progress', value: '0%', note: "Current velocity rate" },
   ];
 
-  const data = stats || defaultStats;
+  const dataset = stats && stats.length ? stats : defaultStats;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {data.map((item, index) => (
-        <div
-          key={index}
-          className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-cyan-500/5 transition duration-300 hover:-translate-y-1 hover:shadow-cyan-500/20 flex min-h-[150px] flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center justify-between gap-4">
-              <h3 className="text-sm uppercase tracking-[0.3em] text-slate-400">{item.title}</h3>
-              <span className={`rounded-2xl p-3 ${item.accent}`}>
-                <FontAwesomeIcon icon={item.icon} />
-              </span>
+    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+      {dataset.map((item, index) => {
+        const key = item.title?.toLowerCase() || "";
+        const meta = configMap[key] || { icon: faBookOpen, style: "bg-slate-900 text-slate-400 border-slate-800" };
+
+        return (
+          <div
+            key={index}
+            // min-w-0 ensures grid item doesn't overflow parent
+            className="rounded-2xl border border-slate-900 bg-slate-900/40 p-6 flex flex-col justify-between transition-all duration-200 hover:bg-slate-900/50 shadow-sm min-w-0"
+          >
+            <div>
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 truncate">
+                  {item.title}
+                </h3>
+                {/* shrink-0 stops icon container from crushing under low widths */}
+                <span className={`rounded-xl p-2.5 text-sm border flex items-center justify-center min-w-[36px] h-[36px] shrink-0 ${item.accent || meta.style}`}>
+                  <FontAwesomeIcon icon={item.icon || meta.icon} />
+                </span>
+              </div>
+              <p className="text-2xl font-bold font-mono tracking-tight text-white mt-4 truncate">
+                {item.value}
+              </p>
             </div>
-            <p className="text-3xl font-semibold text-white mt-5">{item.value}</p>
+            
+            {(item.note || defaultStats[index]?.note) && (
+              <p className="mt-4 text-xs text-slate-500 tracking-normal leading-normal break-words line-clamp-2">
+                {item.note || defaultStats[index]?.note}
+              </p>
+            )}
           </div>
-          {item.note && <p className="mt-6 text-xs uppercase tracking-[0.3em] text-slate-500">{item.note}</p>}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

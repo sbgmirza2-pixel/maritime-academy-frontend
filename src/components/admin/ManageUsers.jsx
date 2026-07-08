@@ -30,7 +30,7 @@ const ManageUsers = ({ users = [], canManageUsers = false, adminStats = null, on
       await onAddUser?.(formData);
       closeModal();
     } catch (submitError) {
-      setError(submitError?.response?.data?.detail || submitError?.message || "Unable to add user.");
+      setError(submitError?.response?.data?.detail || submitError?.message || "Unable to add user record.");
     } finally {
       setSaving(false);
     }
@@ -38,23 +38,31 @@ const ManageUsers = ({ users = [], canManageUsers = false, adminStats = null, on
 
   const hasUsers = users.length > 0;
   const title = canManageUsers ? "Users" : hasUsers ? "My Profile" : "User Access";
-  const userCountLabel = canManageUsers ? `${users.length} ${users.length === 1 ? "user" : "users"}` : users.length ? "Profile only" : "No profile data";
-  const backendTotalUsersNote = !canManageUsers && adminStats?.total_users ? `Total backend users: ${adminStats.total_users} (details restricted)` : null;
+  const userCountLabel = canManageUsers 
+    ? `${users.length} ${users.length === 1 ? "user" : "users"}` 
+    : users.length ? "Identity Loaded" : "No Identity Log";
+  
+  const backendTotalUsersNote = !canManageUsers && adminStats?.total_users 
+    ? `Total system registry: ${adminStats.total_users} entries (restricted)` 
+    : null;
 
   return (
-    <div className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-cyan-500/5 transition duration-300 hover:-translate-y-1">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+    <div className="rounded-2xl border border-slate-900 bg-slate-900/30 p-6">
+      {/* Component Header Controls */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5">
         <div>
-          <h2 className="text-2xl font-semibold text-white">{title}</h2>
-          <p className="text-slate-400 mt-1">{canManageUsers ? "Manage users from the backend database." : "Only your profile details are available from this session."}</p>
-          {backendTotalUsersNote && <p className="text-slate-500 mt-1 text-sm">{backendTotalUsersNote}</p>}
+          <h2 className="text-lg font-bold tracking-tight text-white">{title}</h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {canManageUsers ? "Manage application user directory profiles." : "Only your primary identity profile parameters are available."}
+          </p>
+          {backendTotalUsersNote && <p className="text-[11px] text-slate-500 font-mono mt-1">{backendTotalUsersNote}</p>}
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="rounded-full bg-cyan-500/10 px-4 py-2 text-sm text-cyan-200">{userCountLabel}</span>
+        <div className="flex items-center gap-2.5 self-start sm:self-center">
+          <span className="rounded-lg bg-cyan-500/10 px-2.5 py-1 text-[11px] font-medium text-cyan-400">{userCountLabel}</span>
           {canManageUsers && (
             <button
               onClick={openModal}
-              className="rounded-3xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
+              className="rounded-lg bg-cyan-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-cyan-400"
             >
               Add User
             </button>
@@ -62,32 +70,39 @@ const ManageUsers = ({ users = [], canManageUsers = false, adminStats = null, on
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-700 text-sm">
-          <thead className="bg-slate-950 text-slate-300 uppercase tracking-[0.25em] text-xs">
+      {/* Structured Core Data Matrix */}
+      <div className="overflow-x-auto rounded-xl border border-slate-900 bg-slate-950/20">
+        <table className="min-w-full divide-y divide-slate-900 text-xs text-left">
+          <thead className="bg-slate-950/80 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
             <tr>
-              <th className="px-4 py-3 text-left">Name</th>
-              <th className="px-4 py-3 text-left">Email</th>
-              <th className="px-4 py-3 text-left">Role</th>
-              <th className="px-4 py-3 text-left">Status</th>
-              {canManageUsers && <th className="px-4 py-3 text-left">Actions</th>}
+              <th className="px-4 py-3 font-medium">Identity Name</th>
+              <th className="px-4 py-3 font-medium">Email Endpoint</th>
+              <th className="px-4 py-3 font-medium">Role Privilege</th>
+              <th className="px-4 py-3 font-medium">Status Scope</th>
+              {canManageUsers && <th className="px-4 py-3 font-medium text-right">Actions</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-slate-900/60 font-sans text-slate-300">
             {hasUsers ? (
               users.map((user, index) => (
-                <tr key={user.id || user._id || index} className="hover:bg-slate-950/70">
-                  <td className="px-4 py-4 text-slate-100">{user.name || user.full_name || "Unnamed"}</td>
-                  <td className="px-4 py-4 text-slate-400">{user.email || "N/A"}</td>
-                  <td className="px-4 py-4 text-cyan-200">{user.role || "user"}</td>
-                  <td className="px-4 py-4 text-slate-400">{user.status || (canManageUsers ? "Database user" : "Profile loaded")}</td>
+                <tr key={user.id || user._id || index} className="hover:bg-slate-900/30 transition-colors duration-100">
+                  <td className="px-4 py-3.5 font-medium text-white">{user.name || user.full_name || "Anonymous Operator"}</td>
+                  <td className="px-4 py-3.5 text-slate-400 font-mono">{user.email || "N/A"}</td>
+                  <td className="px-4 py-3.5">
+                    <span className={`inline-block px-1 rounded text-[10px] font-bold uppercase ${user.role === 'admin' ? 'text-violet-400 bg-violet-500/5' : 'text-cyan-400 bg-cyan-500/5'}`}>
+                      {user.role || "user"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5 text-slate-500 text-[11px]">
+                    {user.status || (canManageUsers ? "Synchronized" : "Local Context")}
+                  </td>
                   {canManageUsers && (
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-3.5 text-right">
                       <button
                         onClick={() => onDeleteUser?.(user.id || user._id)}
-                        className="rounded-2xl bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200 transition hover:bg-rose-500/20"
+                        className="rounded bg-red-500/10 px-2 py-1 text-[10px] font-medium text-red-400 transition hover:bg-red-500/20"
                       >
-                        Delete
+                        Purge
                       </button>
                     </td>
                   )}
@@ -95,10 +110,10 @@ const ManageUsers = ({ users = [], canManageUsers = false, adminStats = null, on
               ))
             ) : (
               <tr>
-                <td colSpan={canManageUsers ? "5" : "4"} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={canManageUsers ? 5 : 4} className="px-4 py-8 text-center text-xs font-medium text-slate-500">
                   {canManageUsers
-                    ? "No users found in the backend database."
-                    : "User list endpoint is not available, so only profile data is displayed."}
+                    ? "No structured records returned from database catalog."
+                    : "Endpoint isolation active: displaying local operational data parameters only."}
                 </td>
               </tr>
             )}
@@ -106,89 +121,90 @@ const ManageUsers = ({ users = [], canManageUsers = false, adminStats = null, on
         </table>
       </div>
 
+      {/* Control Configuration Modal */}
       {isModalOpen && canManageUsers && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <div className="w-full max-w-xl rounded-[2rem] border border-slate-800 bg-slate-900 p-6 text-slate-100 shadow-2xl">
-            <div className="flex items-center justify-between gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-slate-900 bg-slate-900 p-5 text-slate-200 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
               <div>
-                <h3 className="text-2xl font-semibold text-white">Add User</h3>
-                <p className="text-slate-400">Create a new backend user record if supported.</p>
+                <h3 className="text-sm font-bold tracking-tight text-white">Create Database Record</h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">Initialize a new identity sequence inside the system.</p>
               </div>
               <button
                 onClick={closeModal}
-                className="rounded-full border border-slate-700 bg-slate-950/90 px-4 py-3 text-slate-300 transition hover:bg-slate-800"
+                className="rounded-md border border-slate-800 bg-slate-950/40 p-1 text-xs text-slate-400 hover:text-white transition"
               >
-                Close
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-slate-300">
-                  <span>Name</span>
+            <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1 text-xs">
+                  <span className="text-slate-400 font-medium">Operator Name</span>
                   <input
                     value={formData.name}
                     onChange={handleChange("name")}
                     required
-                    className="w-full rounded-3xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-cyan-400"
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 text-xs outline-none focus:border-slate-700 transition"
                   />
-                </label>
-                <label className="space-y-2 text-sm text-slate-300">
-                  <span>Email</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <span className="text-slate-400 font-medium">Email Endpoint</span>
                   <input
                     value={formData.email}
                     onChange={handleChange("email")}
                     required
                     type="email"
-                    className="w-full rounded-3xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-cyan-400"
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 text-xs outline-none focus:border-slate-700 transition"
                   />
-                </label>
+                </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-slate-300">
-                  <span>Password</span>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1 text-xs">
+                  <span className="text-slate-400 font-medium">Access Token (Password)</span>
                   <input
                     value={formData.password}
                     onChange={handleChange("password")}
                     required
                     type="password"
-                    className="w-full rounded-3xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-cyan-400"
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 text-xs outline-none focus:border-slate-700 transition"
                   />
-                </label>
-                <label className="space-y-2 text-sm text-slate-300">
-                  <span>Role</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <span className="text-slate-400 font-medium">Privilege Rule Set</span>
                   <select
                     value={formData.role}
                     onChange={handleChange("role")}
-                    className="w-full rounded-3xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-cyan-400"
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-2 text-slate-200 text-xs outline-none focus:border-slate-700 transition"
                   >
-                    <option value="user">user</option>
-                    <option value="admin">admin</option>
+                    <option value="user">User Role</option>
+                    <option value="admin">Admin Privilege</option>
                   </select>
-                </label>
+                </div>
               </div>
 
               {error && (
-                <div className="rounded-3xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">
-                  {error}
+                <div className="rounded-lg bg-red-500/[0.06] border border-red-500/10 p-2.5 text-[11px] text-red-400 font-mono">
+                  Runtime Error: {error}
                 </div>
               )}
 
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-3xl bg-cyan-500 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {saving ? "Adding..." : "Add User"}
-                </button>
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/60 mt-4">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="rounded-3xl border border-slate-700 bg-slate-950 px-6 py-3 text-sm font-semibold text-slate-300 transition hover:border-cyan-400 hover:text-white"
+                  className="rounded-lg border border-slate-800 bg-slate-950/20 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white transition"
                 >
                   Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="rounded-lg bg-cyan-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:opacity-40"
+                >
+                  {saving ? "Deploying..." : "Commit User"}
                 </button>
               </div>
             </form>

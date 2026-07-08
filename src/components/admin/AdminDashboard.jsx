@@ -61,19 +61,6 @@ const AdminDashboard = () => {
         setError(firstError?.response?.data?.detail || firstError?.message || "Failed to load admin data");
       }
 
-      if (usersResult.status === "rejected") {
-        console.warn("User profile endpoint unavailable or requires admin authentication", usersResult.reason);
-      }
-      if (coursesResult.status === "rejected") {
-        console.warn("Courses endpoint unavailable or requires authentication", coursesResult.reason);
-      }
-      if (bookingsResult.status === "rejected") {
-        console.warn("Bookings endpoint unavailable or requires authentication", bookingsResult.reason);
-      }
-      if (paymentsResult.status === "rejected") {
-        console.warn("Payments endpoint unavailable or requires authentication", paymentsResult.reason);
-      }
-
       setUsers(Array.isArray(loadedUsers) ? loadedUsers : []);
       setCanManageUsers(loadedCanManageUsers);
       setCourses(Array.isArray(loadedCourses) ? loadedCourses : []);
@@ -81,9 +68,6 @@ const AdminDashboard = () => {
       setPayments(Array.isArray(loadedPayments) ? loadedPayments : []);
       setAdminStats(loadedStats);
       setLoading(false);
-      if (loadedStats) {
-        setError(null);
-      }
     };
 
     loadAdminData();
@@ -101,34 +85,24 @@ const AdminDashboard = () => {
   const totalBookings = adminStats?.total_bookings ?? bookings.length;
   const revenueValue = adminStats?.total_payments ? Number(adminStats.total_payments) : totalRevenue;
   const userCountDisplay = canManageUsers ? totalUsers : adminStats?.total_users ?? users.length;
+  
   const userCardNote = canManageUsers
     ? "Complete backend user list"
     : adminStats?.total_users
-    ? "Admin stats available, details restricted"
-    : users.length
-    ? "Profile-only access"
-    : "No user data";
+    ? "Stats available, restricted access"
+    : "Profile-only mode";
+
   const liveDataLabel = loading
     ? "syncing..."
     : canManageUsers
     ? `${totalUsers} users, ${totalCourses} courses`
-    : adminStats?.total_users
-    ? `Profile details only · ${adminStats.total_users} users known`
-    : users.length
-    ? `Profile only · ${users.length} profile shown`
-    : `No admin profile, ${totalCourses} courses`;
+    : `Restricted · ${totalUsers} total users`;
 
   const stats = [
-    {
-      title: "Users",
-      value: userCountDisplay,
-      icon: faUsers,
-      accent: "bg-sky-500/15 text-sky-300 border border-sky-500/20",
-      note: userCardNote,
-    },
-    { title: "Courses", value: totalCourses, icon: faBookOpen, accent: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20", note: "Courses loaded from backend" },
-    { title: "Bookings", value: totalBookings, icon: faCalendarCheck, accent: "bg-amber-500/15 text-amber-300 border border-amber-500/20", note: "Bookings require auth" },
-    { title: "Payments", value: `$${revenueValue.toLocaleString()}`, icon: faCreditCard, accent: "bg-violet-500/15 text-violet-300 border border-violet-500/20", note: "Revenue from payment history" },
+    { title: "Users", value: userCountDisplay, icon: faUsers, accent: "bg-sky-500/10 text-sky-400 border border-sky-500/10", note: userCardNote },
+    { title: "Courses", value: totalCourses, icon: faBookOpen, accent: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/10", note: "Total academy tracks" },
+    { title: "Bookings", value: totalBookings, icon: faCalendarCheck, accent: "bg-amber-500/10 text-amber-400 border border-amber-500/10", note: "Pending approval checks" },
+    { title: "Payments", value: `$${revenueValue.toLocaleString()}`, icon: faCreditCard, accent: "bg-violet-500/10 text-violet-400 border border-violet-500/10", note: "Processed earnings" },
   ];
 
   const handleLogout = () => {
@@ -140,82 +114,51 @@ const AdminDashboard = () => {
   };
 
   const handleAddUser = async (userData) => {
-    try {
-      const response = await adminService.createUser(userData);
-      const createdUser = response?.data || response;
-      setUsers((prev) => [createdUser, ...prev]);
-      return createdUser;
-    } catch (createError) {
-      console.error("Failed to create user", createError);
-      throw createError;
-    }
+    const response = await adminService.createUser(userData);
+    const createdUser = response?.data || response;
+    setUsers((prev) => [createdUser, ...prev]);
+    return createdUser;
   };
 
   const handleDeleteUser = async (userId) => {
     if (!userId) return;
-    try {
-      await adminService.deleteUser(userId);
-      setUsers((prev) => prev.filter((user) => user.id !== userId && user._id !== userId));
-    } catch (deleteError) {
-      console.error("Failed to delete user", deleteError);
-    }
+    await adminService.deleteUser(userId);
+    setUsers((prev) => prev.filter((u) => u.id !== userId && u._id !== userId));
   };
 
   const handleDeleteCourse = async (courseId) => {
     if (!courseId) return;
-    try {
-      await adminService.deleteCourse(courseId);
-      setCourses((prev) => prev.filter((course) => course.id !== courseId && course._id !== courseId));
-    } catch (deleteError) {
-      console.error("Failed to delete course", deleteError);
-    }
+    await adminService.deleteCourse(courseId);
+    setCourses((prev) => prev.filter((c) => c.id !== courseId && c._id !== courseId));
   };
 
   const handleCancelBooking = async (bookingId) => {
     if (!bookingId) return;
-    try {
-      await adminService.cancelBooking(bookingId);
-      setBookings((prev) => prev.map((booking) => {
-        if (booking.id === bookingId || booking._id === bookingId) {
-          return { ...booking, status: "cancelled" };
-        }
-        return booking;
-      }));
-    } catch (cancelError) {
-      console.error("Failed to cancel booking", cancelError);
-    }
+    await adminService.cancelBooking(bookingId);
+    setBookings((prev) => prev.map((b) => (b.id === bookingId || b._id === bookingId ? { ...b, status: "cancelled" } : b)));
   };
 
   const handleUpdateBookingStatus = async (bookingId, status) => {
     if (!bookingId || !status) return;
-    try {
-      const response = await adminService.updateBooking(bookingId, { status });
-      const updated = response?.data || {};
-      setBookings((prev) => prev.map((booking) => {
-        if (booking.id === bookingId || booking._id === bookingId) {
-          return { ...booking, ...updated };
-        }
-        return booking;
-      }));
-    } catch (updateError) {
-      console.error("Failed to update booking status", updateError);
-    }
+    const response = await adminService.updateBooking(bookingId, { status });
+    const updated = response?.data || {};
+    setBookings((prev) => prev.map((b) => (b.id === bookingId || b._id === bookingId ? { ...b, ...updated } : b)));
   };
 
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="rounded-[2rem] border border-slate-800 bg-slate-900/90 p-10 text-center text-slate-400 shadow-xl shadow-cyan-500/5">
-          Loading admin data...
+        <div className="rounded-2xl border border-slate-900 bg-slate-900/40 p-12 text-center text-sm font-medium tracking-wide text-slate-400">
+          Syncing secure admin ledger...
         </div>
       );
     }
 
     if (error) {
       return (
-        <div className="rounded-[2rem] border border-red-500/20 bg-slate-900/90 p-6 text-red-300 shadow-xl shadow-red-500/10">
-          <p className="text-lg font-semibold">Unable to load admin data</p>
-          <p className="mt-2 text-slate-400">{error}</p>
+        <div className="rounded-2xl border border-red-500/10 bg-slate-900/60 p-6 text-red-400 shadow-lg shadow-red-500/[0.02]">
+          <p className="text-sm font-semibold tracking-tight">Configuration Mismatch</p>
+          <p className="mt-1 text-xs text-slate-500 font-mono">{error}</p>
         </div>
       );
     }
@@ -233,14 +176,14 @@ const AdminDashboard = () => {
       default:
         return (
           <div className="space-y-6">
-            <div className="rounded-[2rem] border border-cyan-500/20 bg-slate-900/90 p-6 shadow-xl shadow-cyan-500/5 transition duration-500 ease-out hover:-translate-y-1">
-              <div className="flex items-center gap-3">
-                <span className="rounded-2xl bg-cyan-500/15 p-3 text-cyan-300">
-                  <FontAwesomeIcon icon={faGaugeHigh} />
+            <div className="rounded-2xl border border-slate-900 bg-slate-900/20 p-5">
+              <div className="flex items-start gap-3.5">
+                <span className="flex items-center justify-center rounded-xl bg-cyan-500/10 p-2.5 text-cyan-400">
+                  <FontAwesomeIcon icon={faGaugeHigh} className="text-sm" />
                 </span>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">Admin Overview</h3>
-                  <p className="mt-1 text-slate-400">Monitor platform activity, users, and training operations in one place.</p>
+                  <h3 className="text-base font-medium text-white tracking-tight">Admin Overview</h3>
+                  <p className="mt-0.5 text-xs text-slate-400 leading-normal">Monitor comprehensive platform activity, core student cohorts, and operations.</p>
                 </div>
               </div>
             </div>
@@ -254,7 +197,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-950 font-sans text-slate-200 antialiased selection:bg-cyan-500/30">
       <div className="md:flex">
         <AdminSidebar
           isOpen={isSidebarOpen}
@@ -264,33 +207,40 @@ const AdminDashboard = () => {
           onLogout={handleLogout}
         />
 
-        <div className="flex-1">
-          <div className="md:hidden border-b border-slate-800 bg-slate-950/95 px-4 py-4">
+        <div className="flex-1 min-w-0">
+          {/* Mobile Top App Bar */}
+          <div className="md:hidden border-b border-slate-900 bg-slate-950/80 backdrop-blur px-5 py-3.5 sticky top-0 z-40">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-cyan-300">Admin Dashboard</p>
-                <h1 className="text-xl font-semibold">Welcome Back</h1>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-cyan-400">System Gateway</p>
+                <h1 className="text-base font-semibold tracking-tight text-white">Console</h1>
               </div>
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="inline-flex items-center gap-2 rounded-3xl border border-slate-700 bg-slate-900/90 px-4 py-3 text-sm font-semibold text-white transition hover:border-cyan-400 hover:text-cyan-200"
+                className="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs font-medium text-slate-300 hover:border-slate-700"
               >
-                <span>Menu</span>
-                <span className="text-lg">?</span>
+                Menu
               </button>
             </div>
           </div>
 
-          <main className="px-4 py-6 sm:px-6 md:px-8">
-            <div className="mb-6 rounded-[2rem] border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-cyan-500/5 transition duration-500 ease-out">
-              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          {/* Main Context Container */}
+          <main className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+            {/* Top Operational Banner */}
+            <div className="rounded-2xl border border-slate-900 bg-slate-900/30 p-6 shadow-sm">
+              <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">{activeItem === "overview" ? "Administration" : activeItem.charAt(0).toUpperCase() + activeItem.slice(1)}</p>
-                  <h2 className="mt-2 text-3xl font-semibold text-white">Manage the maritime academy operations with ease.</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">
+                    {activeItem === "overview" ? "HQ OPERATIONS" : activeItem.toUpperCase()}
+                  </p>
+                  <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
+                    Maritime Academy System Control
+                  </h2>
+                  <p className="mt-0.5 text-xs text-slate-400">Perform direct matrix updates, records management, and audit tracking.</p>
                 </div>
-                <div className="self-start rounded-3xl border border-slate-800 bg-slate-950/80 px-5 py-4 text-slate-300 shadow-inner shadow-cyan-500/5 max-w-[280px]">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Live data</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{liveDataLabel}</p>
+                <div className="rounded-xl border border-slate-900 bg-slate-950/60 px-4 py-2.5 text-left md:min-w-[200px]">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">Live Status</p>
+                  <p className="mt-0.5 text-sm font-semibold text-cyan-300/90 tracking-tight">{liveDataLabel}</p>
                 </div>
               </div>
             </div>
