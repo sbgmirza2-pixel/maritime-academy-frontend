@@ -256,6 +256,8 @@ docker-compose down
 ---
 
 ## Live Deployment
+frontend + backend 
+https://maritime-shipping-traning-academy.onrender.com/api/v1
 
 Backend API:
 
